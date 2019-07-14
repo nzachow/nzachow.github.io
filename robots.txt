@@ -1,0 +1,2 @@
+User-agent: *
+Sitemap: https://words.zachow.dev/sitemap.xml
