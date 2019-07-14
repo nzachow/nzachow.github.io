@@ -6,4 +6,31 @@
             
         </url>
     
+        <url>
+            <loc>https%3A//words.zachow.dev/tags/</loc>
+            
+        </url>
+    
+        <url>
+            <loc>https%3A//words.zachow.dev/tags/random/</loc>
+            
+        </url>
+    
+        <url>
+            <loc>https%3A//words.zachow.dev/things/</loc>
+            
+        </url>
+    
+        <url>
+            <loc>https%3A//words.zachow.dev/things/hello/</loc>
+            
+                <lastmod>2019-07-14</lastmod>
+            
+        </url>
+    
+        <url>
+            <loc>https%3A//words.zachow.dev/things/page/1/</loc>
+            
+        </url>
+    
 </urlset>

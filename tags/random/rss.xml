@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title></title>
+        <link>https%3A//words.zachow.dev</link>
+        <description></description>
+        <generator>Zola</generator>
+        <language>en</language>
+        <atom:link href="https%3A//words.zachow.dev/tags/random/rss.xml" rel="self" type="application/rss+xml"/>
+        <lastBuildDate>Sun, 14 Jul 2019 00:00:00 +0000</lastBuildDate>
+        
+            <item>
+                <title>Hello</title>
+                <pubDate>Sun, 14 Jul 2019 00:00:00 +0000</pubDate>
+                <link>https%3A//words.zachow.dev/things/hello/</link>
+                <guid>https%3A//words.zachow.dev/things/hello/</guid>
+                <description>&lt;p&gt;Some content&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+    </channel>
+</rss>
