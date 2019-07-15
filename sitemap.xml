@@ -7,29 +7,29 @@
         </url>
     
         <url>
+            <loc>https%3A//words.zachow.dev/blog/</loc>
+            
+        </url>
+    
+        <url>
+            <loc>https%3A//words.zachow.dev/page/1/</loc>
+            
+        </url>
+    
+        <url>
             <loc>https%3A//words.zachow.dev/tags/</loc>
             
         </url>
     
         <url>
-            <loc>https%3A//words.zachow.dev/tags/random/</loc>
+            <loc>https%3A//words.zachow.dev/tags/likes/</loc>
             
         </url>
     
         <url>
-            <loc>https%3A//words.zachow.dev/things/</loc>
-            
-        </url>
-    
-        <url>
-            <loc>https%3A//words.zachow.dev/things/hello/</loc>
+            <loc>https%3A//words.zachow.dev/yotube/</loc>
             
                 <lastmod>2019-07-14</lastmod>
-            
-        </url>
-    
-        <url>
-            <loc>https%3A//words.zachow.dev/things/page/1/</loc>
             
         </url>
     
