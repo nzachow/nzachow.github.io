@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>words.zachow.dev</title>
+
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="https://words.zachow.dev/rss.xml">
+      
+
+      
+          <link rel="stylesheet" href="https://words.zachow.dev/site.css">
+      
+
+      
+      
+    </head>
+
+    <body class="hack dark main container">
+        
+
+<article itemscope itemtype="http://schema.org/BlogPosting">
+    <header>
+        <h1 itemprop="headline">My experience with Gitea</h1>
+        <span class="muted">
+    <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <circle cx="16" cy="16" r="14"/>
+        <path d="M16 8 L16 16 20 20"/>
+    </svg>
+    <span>3 minute read</span>
+    <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z"/>
+    </svg>
+
+    Published: 2019-07-15
+</span>
+    </header>
+    <div itemprop="articleBody">
+      <p>In this post I want to share my personal experience with the
+<a href="https://gitea.io/">Gitea</a> project. If you don't know Gitea in a self-hosted
+alternative to Github.</p>
+<p id="zola-continue-reading"><a name="continue-reading"></a></p>
+<p>I've always liked the idea of <strong>owning my own stuff</strong>, for this reason I had
+already played a bit with a private Gitlab installation. However this Gitlab
+episode left me with some really deep scars. Of course, most of the problems I
+faced were only my own fault... Who would've though that installing Gitlab on a
+server with <strong>only 512Mb of RAM</strong> was a bad idea? Not my younger self, that's
+for sure. In my defence, at the time the minimum was <strong>only</strong> 2Gb.</p>
+<p>Given my previous experience I was really hopeful: &quot;At least it <strong>can't</strong> be
+worse than Gitlab&quot; I though to myself. And for once I was right. What I couldn't
+anticipate was how good Gitea was.</p>
+<p>Before we continue I want to make a few points about the things I would have to
+consider before deciding for or against Gitea. First, I want something I can
+run with much less than 512Mb of RAM. This is because I plan to run the service
+inside an US$5 instance on Linode that I already have for other projects;
+Second, I want something that once properly configured, works without any kind
+of intervention; Lastly I already had a great amount of headache with Django
+installations, so something easy to install would be a really nice bonus.</p>
+<p>At a first glance I saw in theirs website <strong>&quot;Easy to install&quot;</strong> and
+<strong>&quot;Lightweight&quot;</strong>. That was enough to make me install it in my server.
+Installation was a breeze. Just download the binary, copy a sample config file
+and run the binary. After that I just needed to make some small tweaks in
+my configuration file, create an appropriate location to hold my data and
+create a systemd unit file. This setup was made way back in 2017 and it just
+works.</p>
+<p>I am aware that part of my good experience stems from me no pushing the
+software hard enough. My use is <strong>really</strong> light, I mostly use it as a backup
+for source code that I don't want to put on Github.</p>
+<p>Having said all that, if you want something that is stable, easy to configure and
+can be deployed to basically anything; I really think you should give Gitea a
+chance. After almost 2 years my only <strong>real</strong> complain is their name, because I am
+still unable to properly pronounce it...</p>
+<p>PS: Just to be clear, I don't think that Gitlab is a bad piece of software. It
+just wasn't made for my use case. It was made to compete with Github inside big
+corporations with complex needs and in this environment I do think that Gitlab
+is a big feat of engineering. The problem was that I took something made for
+the enterprise and tried to use it at home.</p>
+
+    </div>
+
+    
+        <footer>
+            <hr>
+            <p>
+                
+                
+                
+                    and tagged
+                    
+                        <a href="https://words.zachow.dev/tags/review/">review</a>
+                        
+                            
+                                
+                                    and
+                                
+                            
+                        
+                    
+                        <a href="https://words.zachow.dev/tags/hand-waving/">hand-waving</a>
+                        
+                            
+                        
+                    
+                
+            </p>
+        </footer>
+    
+</article>
+
+
+    </body>
+
+</html>

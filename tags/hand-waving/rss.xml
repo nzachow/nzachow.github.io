@@ -6,7 +6,7 @@
         <description>Blog about things I find interesting</description>
         <generator>Zola</generator>
         <language>en</language>
-        <atom:link href="https%3A//words.zachow.dev/rss.xml" rel="self" type="application/rss+xml"/>
+        <atom:link href="https%3A//words.zachow.dev/tags/hand-waving/rss.xml" rel="self" type="application/rss+xml"/>
         <lastBuildDate>Mon, 15 Jul 2019 22:50:00 -0300</lastBuildDate>
         
             <item>
@@ -17,15 +17,6 @@
                 <description>&lt;p&gt;In this post I want to share my personal experience with the
 &lt;a href=&quot;https:&#x2F;&#x2F;gitea.io&#x2F;&quot;&gt;Gitea&lt;&#x2F;a&gt; project. If you don&#x27;t know Gitea in a self-hosted
 alternative to Github.&lt;&#x2F;p&gt;
-</description>
-            </item>
-        
-            <item>
-                <title>Youtube channels</title>
-                <pubDate>Sun, 14 Jul 2019 00:00:00 +0000</pubDate>
-                <link>https%3A//words.zachow.dev/yotube/</link>
-                <guid>https%3A//words.zachow.dev/yotube/</guid>
-                <description>&lt;p&gt;This is a list with some Youtube channels that I like to watch.&lt;&#x2F;p&gt;
 </description>
             </item>
         

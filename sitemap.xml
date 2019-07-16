@@ -12,6 +12,18 @@
         </url>
     
         <url>
+            <loc>https%3A//words.zachow.dev/blog/gitea/</loc>
+            
+                <lastmod>2019-07-15T22:50:00-03:00</lastmod>
+            
+        </url>
+    
+        <url>
+            <loc>https%3A//words.zachow.dev/blog/page/1/</loc>
+            
+        </url>
+    
+        <url>
             <loc>https%3A//words.zachow.dev/page/1/</loc>
             
         </url>
@@ -22,7 +34,17 @@
         </url>
     
         <url>
+            <loc>https%3A//words.zachow.dev/tags/hand-waving/</loc>
+            
+        </url>
+    
+        <url>
             <loc>https%3A//words.zachow.dev/tags/likes/</loc>
+            
+        </url>
+    
+        <url>
+            <loc>https%3A//words.zachow.dev/tags/review/</loc>
             
         </url>
     
