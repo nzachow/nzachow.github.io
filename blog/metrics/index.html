@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>words.zachow.dev</title>
+
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="https://words.zachow.dev/rss.xml">
+      
+
+      
+          <link rel="stylesheet" href="https://words.zachow.dev/site.css">
+      
+
+      
+      
+    </head>
+
+    <body class="hack dark main container">
+        
+
+<article itemscope itemtype="http://schema.org/BlogPosting">
+    <header>
+        <h1 itemprop="headline">How to make a simple Prometheus exporter in Go - Part 1</h1>
+        <span class="muted">
+    <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <circle cx="16" cy="16" r="14"/>
+        <path d="M16 8 L16 16 20 20"/>
+    </svg>
+    <span>4 minute read</span>
+    <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z"/>
+    </svg>
+
+    Published: 2019-07-20
+</span>
+    </header>
+    <div itemprop="articleBody">
+      <p>In this post I want to show how easy can be to write a custom Prometheus
+exporter in Go.</p>
+<p id="zola-continue-reading"><a name="continue-reading"></a></p>
+<p>When someone says you should you should write your own metrics exporter
+for Prometheus your first question should be <strong>&quot;WHY?&quot;</strong>. There are so many
+great exporters available today that you need to have a pretty good reason
+to tackle this problem. Fortunately, <strong>&quot;because we can&quot;</strong> is a pretty good
+reason to do almost anything, including write our own metrics exporter.</p>
+<p>Just to be clear, I'm not trying to argue that you <strong>should</strong> I just
+want to show you that you <strong>can</strong> do it. Writing an exporter isn't a thing
+reserved to just a selected few, anyone can do it if they really want it.</p>
+<p>First, if you are serious about writing a custom exporter you should read
+<a href="https://prometheus.io/docs/instrumenting/writing_exporters">this</a>.</p>
+<p>Prometheus expects to receive three data points to every metric. The most
+important is the metric itself. This include the metric name, its associated
+labels and the current value. The basic format for a metric is the following:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;">metric_name{label_name=&quot;label_value&quot;} 1
+</span></pre>
+<p>The next two data points are optionals, but keep in mind that Prometheus
+expects this information to come <strong>before</strong> the actual metric data. The first
+optional information is the metric description.</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;"># HELP metric_name some description about the metric
+</span></pre>
+<p>This only exists to give some reference for the users of this metric.</p>
+<p>The last piece of information is the metric type, if you don't send this
+data Prometheus will classify your metric as &quot;untyped&quot;.</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;"># TYPE metric_name counter
+</span></pre>
+<p>For more information on metric types you can read
+<a href="https://prometheus.io/docs/concepts/metric_types/">this page</a>
+and for more information on the exposition format you can
+read <a href="https://prometheus.io/docs/instrumenting/exposition_formats/">this page</a>.</p>
+<p>Now that we already covered the basic theory we can start to write
+some code. In this post we will just create some simple functions
+that will allow us to generate the specific format that Prometheus
+expects.</p>
+<p>The ideia behind our first implementation is that we will have
+some function that receives the data and returns an <code>bytes.Buffer</code>
+that will give us the string we want. This will give us a nice
+plattform to build some abstractions in the future and will
+be really easy tom implement right now.</p>
+<p>The first step is to create some functions to generate the &quot;# HELP&quot;
+and &quot;# TYPE&quot; lines:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">CreateHelp</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">metricName</span><span style="color:#c0c5ce;">, </span><span style="color:#bf616a;">metricHelp </span><span style="color:#b48ead;">string</span><span style="color:#c0c5ce;">) *bytes.</span><span style="color:#bf616a;">Buffer </span><span style="color:#c0c5ce;">{
+	</span><span style="color:#bf616a;">str </span><span style="color:#c0c5ce;">:= &quot;</span><span style="color:#a3be8c;"># HELP </span><span style="color:#c0c5ce;">&quot; + metricName + &quot; &quot; + metricHelp + &quot;</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;
+	</span><span style="color:#b48ead;">return</span><span style="color:#c0c5ce;"> bytes.</span><span style="color:#bf616a;">NewBufferString</span><span style="color:#c0c5ce;">(str)
+}
+
+</span><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">CreateType</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">metricName</span><span style="color:#c0c5ce;">, </span><span style="color:#bf616a;">metricType </span><span style="color:#b48ead;">string</span><span style="color:#c0c5ce;">) *bytes.</span><span style="color:#bf616a;">Buffer </span><span style="color:#c0c5ce;">{
+	</span><span style="color:#bf616a;">str </span><span style="color:#c0c5ce;">:= &quot;</span><span style="color:#a3be8c;"># TYPE </span><span style="color:#c0c5ce;">&quot; + metricName + &quot; &quot; + metricType + &quot;</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;
+	</span><span style="color:#b48ead;">return</span><span style="color:#c0c5ce;"> bytes.</span><span style="color:#bf616a;">NewBufferString</span><span style="color:#c0c5ce;">(str)
+}
+</span></pre>
+<p>The most notable flaw in this code the fact that <code>metricType</code> in a string.
+This can cause a lot o trouble if we aren't careful enogh. One better
+solution we could adopt would be to use an <code>iota</code> to represent the
+metric type and make a <code>switch</code> on it. As we are going for the
+simplest possible solution, we will be skipping this step right now.</p>
+<p>Next we need to generate the actual metric line:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">CreateMetric</span><span style="color:#c0c5ce;">(
+	</span><span style="color:#bf616a;">metricName </span><span style="color:#b48ead;">string</span><span style="color:#c0c5ce;">,
+	</span><span style="color:#bf616a;">metricLabels </span><span style="color:#b48ead;">map</span><span style="color:#c0c5ce;">[</span><span style="color:#b48ead;">string</span><span style="color:#c0c5ce;">]</span><span style="color:#b48ead;">string</span><span style="color:#c0c5ce;">,
+	</span><span style="color:#bf616a;">metricValue </span><span style="color:#b48ead;">float64</span><span style="color:#c0c5ce;">) *bytes.</span><span style="color:#bf616a;">Buffer </span><span style="color:#c0c5ce;">{
+	</span><span style="color:#bf616a;">data </span><span style="color:#c0c5ce;">:= &quot;&quot;
+
+	</span><span style="color:#bf616a;">lblString </span><span style="color:#c0c5ce;">:= &quot;&quot;
+	</span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">k</span><span style="color:#c0c5ce;">, </span><span style="color:#bf616a;">v </span><span style="color:#c0c5ce;">:= </span><span style="color:#b48ead;">range</span><span style="color:#c0c5ce;"> metricLabels {
+		lblString += &quot;</span><span style="color:#96b5b4;">\&quot;</span><span style="color:#c0c5ce;">&quot; + k + &quot;</span><span style="color:#96b5b4;">\&quot;</span><span style="color:#a3be8c;">=</span><span style="color:#96b5b4;">\&quot;</span><span style="color:#c0c5ce;">&quot; + v + &quot;</span><span style="color:#96b5b4;">\&quot;</span><span style="color:#a3be8c;">,</span><span style="color:#c0c5ce;">&quot;
+	}
+
+	</span><span style="color:#65737e;">// remove last comma
+</span><span style="color:#c0c5ce;">	lblString = lblString[:</span><span style="color:#96b5b4;">len</span><span style="color:#c0c5ce;">(lblString)-</span><span style="color:#d08770;">1</span><span style="color:#c0c5ce;">]
+
+	</span><span style="color:#bf616a;">valueString </span><span style="color:#c0c5ce;">:= strconv.</span><span style="color:#bf616a;">FormatFloat</span><span style="color:#c0c5ce;">(metricValue, &#39;</span><span style="color:#a3be8c;">E</span><span style="color:#c0c5ce;">&#39;, -</span><span style="color:#d08770;">1</span><span style="color:#c0c5ce;">, </span><span style="color:#d08770;">64</span><span style="color:#c0c5ce;">)
+	data += metricName + &quot;</span><span style="color:#a3be8c;">{</span><span style="color:#c0c5ce;">&quot; + lblString + &quot;</span><span style="color:#a3be8c;">} </span><span style="color:#c0c5ce;">&quot; + valueString + &quot;</span><span style="color:#96b5b4;">\n</span><span style="color:#c0c5ce;">&quot;
+	</span><span style="color:#b48ead;">return</span><span style="color:#c0c5ce;"> bytes.</span><span style="color:#bf616a;">NewBufferString</span><span style="color:#c0c5ce;">(data)
+}
+</span></pre>
+<p>We cut a lot of corners with this implementation, but this should
+be enough so you can better understand the problem.</p>
+<p>With this we now have everything we need in place
+to start exporting data to a prometheus server. The last piece of
+code we need is something to actually serve this metrics over HTTP.
+The following is a really simple implementation:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">main</span><span style="color:#c0c5ce;">() {
+	http.</span><span style="color:#bf616a;">HandleFunc</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">/metrics</span><span style="color:#c0c5ce;">&quot;, metrics)
+	log.</span><span style="color:#bf616a;">Fatal</span><span style="color:#c0c5ce;">(http.</span><span style="color:#bf616a;">ListenAndServe</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">:8888</span><span style="color:#c0c5ce;">&quot;, </span><span style="color:#d08770;">nil</span><span style="color:#c0c5ce;">))
+}
+
+</span><span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">metrics</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">w</span><span style="color:#c0c5ce;"> http.ResponseWriter, </span><span style="color:#bf616a;">r </span><span style="color:#c0c5ce;">*http.Request) {
+	</span><span style="color:#bf616a;">name </span><span style="color:#c0c5ce;">:= &quot;</span><span style="color:#a3be8c;">first_metric</span><span style="color:#c0c5ce;">&quot;
+	</span><span style="color:#bf616a;">desc </span><span style="color:#c0c5ce;">:= &quot;</span><span style="color:#a3be8c;">this is our first metric</span><span style="color:#c0c5ce;">&quot;
+	</span><span style="color:#bf616a;">metricType </span><span style="color:#c0c5ce;">:= &quot;</span><span style="color:#a3be8c;">gauge</span><span style="color:#c0c5ce;">&quot;
+	</span><span style="color:#bf616a;">lbls </span><span style="color:#c0c5ce;">:= </span><span style="color:#96b5b4;">make</span><span style="color:#c0c5ce;">(</span><span style="color:#b48ead;">map</span><span style="color:#c0c5ce;">[</span><span style="color:#b48ead;">string</span><span style="color:#c0c5ce;">]</span><span style="color:#b48ead;">string</span><span style="color:#c0c5ce;">)
+	lbls[&quot;</span><span style="color:#a3be8c;">author</span><span style="color:#c0c5ce;">&quot;] = &quot;</span><span style="color:#a3be8c;">Nicolas Zachow</span><span style="color:#c0c5ce;">&quot;
+	lbls[&quot;</span><span style="color:#a3be8c;">blog</span><span style="color:#c0c5ce;">&quot;] = &quot;</span><span style="color:#a3be8c;">words.zachow.dev</span><span style="color:#c0c5ce;">&quot;
+	</span><span style="color:#bf616a;">value </span><span style="color:#c0c5ce;">:= </span><span style="color:#d08770;">1.0
+
+	</span><span style="color:#bf616a;">h </span><span style="color:#c0c5ce;">:= </span><span style="color:#bf616a;">CreateHelp</span><span style="color:#c0c5ce;">(name, desc)
+	w.</span><span style="color:#bf616a;">Write</span><span style="color:#c0c5ce;">(h.</span><span style="color:#bf616a;">Bytes</span><span style="color:#c0c5ce;">())
+	</span><span style="color:#bf616a;">t </span><span style="color:#c0c5ce;">:= </span><span style="color:#bf616a;">CreateType</span><span style="color:#c0c5ce;">(name, metricType)
+	w.</span><span style="color:#bf616a;">Write</span><span style="color:#c0c5ce;">(t.</span><span style="color:#bf616a;">Bytes</span><span style="color:#c0c5ce;">())
+	</span><span style="color:#bf616a;">m </span><span style="color:#c0c5ce;">:= </span><span style="color:#bf616a;">CreateMetric</span><span style="color:#c0c5ce;">(name, lbls, value)
+	w.</span><span style="color:#bf616a;">Write</span><span style="color:#c0c5ce;">(m.</span><span style="color:#bf616a;">Bytes</span><span style="color:#c0c5ce;">())
+}
+</span></pre>
+<p>The final result should look like this:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#c0c5ce;"># HELP first_metric this is our first metric
+# TYPE first_metric gauge
+first_metric{&quot;author&quot;=&quot;Nicolas Zachow&quot;,&quot;blog&quot;=&quot;words.zachow.dev&quot;} 1E+00
+</span></pre>
+<p>What we created so far works but is really cumbersome
+to use in any project larger than a simple <code>Hello World</code>. For this
+reason we will create some abstractions on top of this code in the
+near future.</p>
+
+    </div>
+
+    
+        <footer>
+            <hr>
+            <p>
+                
+                
+                
+                    and tagged
+                    
+                        <a href="https://words.zachow.dev/tags/code/">code</a>
+                        
+                    
+                
+            </p>
+        </footer>
+    
+</article>
+
+
+    </body>
+
+</html>

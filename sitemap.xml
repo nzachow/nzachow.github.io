@@ -19,6 +19,13 @@
         </url>
     
         <url>
+            <loc>https%3A//words.zachow.dev/blog/metrics/</loc>
+            
+                <lastmod>2019-07-20T17:12:55-03:00</lastmod>
+            
+        </url>
+    
+        <url>
             <loc>https%3A//words.zachow.dev/blog/page/1/</loc>
             
         </url>
@@ -30,6 +37,11 @@
     
         <url>
             <loc>https%3A//words.zachow.dev/tags/</loc>
+            
+        </url>
+    
+        <url>
+            <loc>https%3A//words.zachow.dev/tags/code/</loc>
             
         </url>
     

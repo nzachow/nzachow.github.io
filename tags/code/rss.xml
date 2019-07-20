@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>words.zachow.dev</title>
+        <link>https%3A//words.zachow.dev</link>
+        <description>Blog about things I find interesting</description>
+        <generator>Zola</generator>
+        <language>en</language>
+        <atom:link href="https%3A//words.zachow.dev/tags/code/rss.xml" rel="self" type="application/rss+xml"/>
+        <lastBuildDate>Sat, 20 Jul 2019 17:12:55 -0300</lastBuildDate>
+        
+            <item>
+                <title>How to make a simple Prometheus exporter in Go - Part 1</title>
+                <pubDate>Sat, 20 Jul 2019 17:12:55 -0300</pubDate>
+                <link>https%3A//words.zachow.dev/blog/metrics/</link>
+                <guid>https%3A//words.zachow.dev/blog/metrics/</guid>
+                <description>&lt;p&gt;In this post I want to show how easy can be to write a custom Prometheus
+exporter in Go.&lt;&#x2F;p&gt;
+</description>
+            </item>
+        
+    </channel>
+</rss>
