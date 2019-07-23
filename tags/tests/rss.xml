@@ -6,7 +6,7 @@
         <description>Blog about things I find interesting</description>
         <generator>Zola</generator>
         <language>en</language>
-        <atom:link href="https%3A//words.zachow.dev/tags/code/rss.xml" rel="self" type="application/rss+xml"/>
+        <atom:link href="https%3A//words.zachow.dev/tags/tests/rss.xml" rel="self" type="application/rss+xml"/>
         <lastBuildDate>Mon, 22 Jul 2019 17:12:55 -0300</lastBuildDate>
         
             <item>
@@ -18,16 +18,6 @@
 &lt;code&gt;bufio&lt;&#x2F;code&gt; in the standard library.&lt;&#x2F;p&gt;
 &lt;p&gt;It is about how we can make a test case fail if it take more than X seconds,
 where X is an arbitrary value we chose.&lt;&#x2F;p&gt;
-</description>
-            </item>
-        
-            <item>
-                <title>How to make a simple Prometheus exporter in Go - Part 1</title>
-                <pubDate>Sat, 20 Jul 2019 17:12:55 -0300</pubDate>
-                <link>https%3A//words.zachow.dev/blog/metrics/</link>
-                <guid>https%3A//words.zachow.dev/blog/metrics/</guid>
-                <description>&lt;p&gt;In this post I want to show how easy can be to write a custom Prometheus
-exporter in Go.&lt;&#x2F;p&gt;
 </description>
             </item>
         

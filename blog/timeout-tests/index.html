@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+      <!-- Enable responsiveness on mobile devices-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+      <title>words.zachow.dev</title>
+
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="https://words.zachow.dev/rss.xml">
+      
+
+      
+          <link rel="stylesheet" href="https://words.zachow.dev/site.css">
+      
+
+      
+      
+    </head>
+
+    <body class="hack dark main container">
+        
+
+<article itemscope itemtype="http://schema.org/BlogPosting">
+    <header>
+        <h1 itemprop="headline">How to timeout tests in Go</h1>
+        <span class="muted">
+    <svg style="margin-bottom:-3px" class="i-clock" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <circle cx="16" cy="16" r="14"/>
+        <path d="M16 8 L16 16 20 20"/>
+    </svg>
+    <span>3 minute read</span>
+    <svg style="margin-bottom: -3px" class="i-edit" viewBox="0 0 32 32"
+         width="16" height="16" fill="none" stroke="currentcolor"
+         stroke-linecap="round" stroke-linejoin="round" stroke-width="6.25%">
+        <path d="M30 7 L25 2 5 22 3 29 10 27 Z M21 6 L26 11 Z M5 22 L10 27 Z"/>
+    </svg>
+
+    Published: 2019-07-22
+</span>
+    </header>
+    <div itemprop="articleBody">
+      <p>Today I want to share a nice trick I found while inspecting the test file for the
+<code>bufio</code> in the standard library.</p>
+<p>It is about how we can make a test case fail if it take more than X seconds,
+where X is an arbitrary value we chose.</p>
+<p id="zola-continue-reading"><a name="continue-reading"></a></p>
+<p>To give some context I was working with some code that, with some input conditions
+it would never finish. After having identified and fixed the bug I started to wonder
+how could I create a test case to prevent this bug to ever return to our codebase...</p>
+<p>The code I was working with made use of the <code>bufio.Reader</code> struct, so it made sense
+to me read the test code for this struct. And that's how I found this trick.</p>
+<p>The idea is really simple, you just need to call the function you want to test in a
+separate goroutine and send the response through a channel. After that you
+create a select statement where you can define the timeout you want.</p>
+<p>To make it more clear I will create a very contrived example of how this techique can
+be used. First imagine that you want to test a function that receives an <code>array of int</code>
+and return the sum as an <code>int</code>:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">sum</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">values </span><span style="color:#c0c5ce;">[]</span><span style="color:#b48ead;">int</span><span style="color:#c0c5ce;">) </span><span style="color:#b48ead;">int </span><span style="color:#c0c5ce;">{
+    </span><span style="color:#bf616a;">result </span><span style="color:#c0c5ce;">:= </span><span style="color:#d08770;">0
+    </span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">_</span><span style="color:#c0c5ce;">, </span><span style="color:#bf616a;">v </span><span style="color:#c0c5ce;">:= values {
+        result += v
+    }
+    </span><span style="color:#b48ead;">return</span><span style="color:#c0c5ce;"> result
+}
+</span></pre>
+<p>Creating some test cases for this function is pretty simple, especially since
+we are using GoUnit to generate the boilerplate:</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">func </span><span style="color:#8fa1b3;">Test_sum</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">t </span><span style="color:#c0c5ce;">*testing.T) {
+	</span><span style="color:#b48ead;">type </span><span style="color:#c0c5ce;">args </span><span style="color:#b48ead;">struct </span><span style="color:#c0c5ce;">{
+		</span><span style="color:#bf616a;">values </span><span style="color:#c0c5ce;">[]</span><span style="color:#b48ead;">int
+	</span><span style="color:#c0c5ce;">}
+	</span><span style="color:#bf616a;">tests </span><span style="color:#c0c5ce;">:= []</span><span style="color:#b48ead;">struct </span><span style="color:#c0c5ce;">{
+		name </span><span style="color:#b48ead;">string</span><span style="color:#c0c5ce;">
+		args </span><span style="color:#b48ead;">func</span><span style="color:#c0c5ce;">(t *testing.</span><span style="color:#bf616a;">T</span><span style="color:#c0c5ce;">) args
+
+		want1 </span><span style="color:#b48ead;">int
+	</span><span style="color:#c0c5ce;">}{
+		{
+			name: &quot;</span><span style="color:#a3be8c;">1, 2, 3, 4 should sums to 10</span><span style="color:#c0c5ce;">&quot;,
+			args: </span><span style="color:#b48ead;">func</span><span style="color:#c0c5ce;">(*testing.</span><span style="color:#bf616a;">T</span><span style="color:#c0c5ce;">) args {
+				</span><span style="color:#b48ead;">return</span><span style="color:#c0c5ce;"> args{values: []</span><span style="color:#b48ead;">int</span><span style="color:#c0c5ce;">{</span><span style="color:#d08770;">1</span><span style="color:#c0c5ce;">, </span><span style="color:#d08770;">2</span><span style="color:#c0c5ce;">, </span><span style="color:#d08770;">3</span><span style="color:#c0c5ce;">, </span><span style="color:#d08770;">4</span><span style="color:#c0c5ce;">}}
+			},
+			want1: </span><span style="color:#d08770;">10</span><span style="color:#c0c5ce;">,
+		},
+	}
+
+	</span><span style="color:#b48ead;">for </span><span style="color:#bf616a;">_</span><span style="color:#c0c5ce;">, </span><span style="color:#bf616a;">tt </span><span style="color:#c0c5ce;">:= </span><span style="color:#b48ead;">range</span><span style="color:#c0c5ce;"> tests {
+		t.</span><span style="color:#bf616a;">Run</span><span style="color:#c0c5ce;">(tt.</span><span style="color:#bf616a;">name</span><span style="color:#c0c5ce;">, </span><span style="color:#b48ead;">func</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">t </span><span style="color:#c0c5ce;">*testing.T) {
+			</span><span style="color:#bf616a;">tArgs </span><span style="color:#c0c5ce;">:= tt.</span><span style="color:#bf616a;">args</span><span style="color:#c0c5ce;">(t)
+
+			</span><span style="color:#bf616a;">got1 </span><span style="color:#c0c5ce;">:= </span><span style="color:#bf616a;">sum</span><span style="color:#c0c5ce;">(tArgs.</span><span style="color:#bf616a;">values</span><span style="color:#c0c5ce;">)
+
+			</span><span style="color:#b48ead;">if </span><span style="color:#c0c5ce;">!reflect.</span><span style="color:#bf616a;">DeepEqual</span><span style="color:#c0c5ce;">(got1, tt.</span><span style="color:#bf616a;">want1</span><span style="color:#c0c5ce;">) {
+				t.</span><span style="color:#bf616a;">Errorf</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">sum got1 = </span><span style="color:#d08770;">%v</span><span style="color:#a3be8c;">, want1: </span><span style="color:#d08770;">%v</span><span style="color:#c0c5ce;">&quot;, got1, tt.</span><span style="color:#bf616a;">want1</span><span style="color:#c0c5ce;">)
+			}
+		})
+	}
+}
+</span></pre>
+<p>Now comes the fun stuff. With a simple change we can make sure this test
+will fail if it take more than <code>100 ms</code>.</p>
+<pre style="background-color:#2b303b;">
+<span style="color:#b48ead;">for </span><span style="color:#bf616a;">_</span><span style="color:#c0c5ce;">, </span><span style="color:#bf616a;">tt </span><span style="color:#c0c5ce;">:= </span><span style="color:#b48ead;">range</span><span style="color:#c0c5ce;"> tests {
+    t.</span><span style="color:#bf616a;">Run</span><span style="color:#c0c5ce;">(tt.</span><span style="color:#bf616a;">name</span><span style="color:#c0c5ce;">, </span><span style="color:#b48ead;">func</span><span style="color:#c0c5ce;">(</span><span style="color:#bf616a;">t </span><span style="color:#c0c5ce;">*testing.T) {
+
+        </span><span style="color:#bf616a;">responses </span><span style="color:#c0c5ce;">:= </span><span style="color:#96b5b4;">make</span><span style="color:#c0c5ce;">(</span><span style="color:#b48ead;">chan int</span><span style="color:#c0c5ce;">)
+        </span><span style="color:#b48ead;">go func</span><span style="color:#c0c5ce;">() {
+            </span><span style="color:#bf616a;">tArgs </span><span style="color:#c0c5ce;">:= tt.</span><span style="color:#bf616a;">args</span><span style="color:#c0c5ce;">(t)
+            </span><span style="color:#bf616a;">r </span><span style="color:#c0c5ce;">:= </span><span style="color:#bf616a;">sum</span><span style="color:#c0c5ce;">(tArgs.</span><span style="color:#bf616a;">values</span><span style="color:#c0c5ce;">)
+            responses &lt;- r
+        }()
+
+        </span><span style="color:#b48ead;">select </span><span style="color:#c0c5ce;">{
+        </span><span style="color:#b48ead;">case </span><span style="color:#bf616a;">got1 </span><span style="color:#c0c5ce;">:= &lt;-responses:
+            </span><span style="color:#b48ead;">if </span><span style="color:#c0c5ce;">!reflect.</span><span style="color:#bf616a;">DeepEqual</span><span style="color:#c0c5ce;">(got1, tt.</span><span style="color:#bf616a;">want1</span><span style="color:#c0c5ce;">) {
+                t.</span><span style="color:#bf616a;">Errorf</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">sum got1 = </span><span style="color:#d08770;">%v</span><span style="color:#a3be8c;">, want1: </span><span style="color:#d08770;">%v</span><span style="color:#c0c5ce;">&quot;, got1, tt.</span><span style="color:#bf616a;">want1</span><span style="color:#c0c5ce;">)
+            }
+        </span><span style="color:#b48ead;">case </span><span style="color:#c0c5ce;">&lt;-time.</span><span style="color:#bf616a;">After</span><span style="color:#c0c5ce;">(</span><span style="color:#d08770;">100 </span><span style="color:#c0c5ce;">* time.</span><span style="color:#bf616a;">Millisecond</span><span style="color:#c0c5ce;">):
+            t.</span><span style="color:#bf616a;">Error</span><span style="color:#c0c5ce;">(&quot;</span><span style="color:#a3be8c;">test timed out</span><span style="color:#c0c5ce;">&quot;)
+        }
+    })
+}
+</span></pre>
+<p>Keep in mind that it would be a really bad idea use this to create some kind
+of tests against performance regressions.</p>
+
+    </div>
+
+    
+        <footer>
+            <hr>
+            <p>
+                
+                
+                
+                    and tagged
+                    
+                        <a href="https://words.zachow.dev/tags/code/">code</a>
+                        
+                            
+                                
+                                    and
+                                
+                            
+                        
+                    
+                        <a href="https://words.zachow.dev/tags/tests/">tests</a>
+                        
+                            
+                        
+                    
+                
+            </p>
+        </footer>
+    
+</article>
+
+
+    </body>
+
+</html>
